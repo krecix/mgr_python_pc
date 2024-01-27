@@ -7,6 +7,7 @@ Created on Tue May 25 18:01:23 2021
 """
 
 import struct
+from calculations import parse_measurements
 
 byteOrder = 'little'
 
@@ -61,6 +62,9 @@ class VibrationUnit():
             value = int.from_bytes(bytearray([data[i], data[i+1]]), byteOrder)
             values += [float(value)]
         
+        print(len(values))
+        parse_measurements(values)
+
         return values
                 
     
@@ -72,7 +76,11 @@ class VibrationUnit():
         receivedMsg = self.binaryCommunicator.sendData(message)
         
         self.binaryCommunicator.closeSerial()
-        
+
+        if len(receivedMsg) == 1:
+            print("Check PID status: Error")
+            return None 
+
         if receivedMsg[1] == 0x01:
             print("Check PID status: Ok")
         else:
