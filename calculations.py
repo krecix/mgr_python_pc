@@ -4,7 +4,7 @@ import csv
 from geneticUtils import getSignalEnvelope, movingFilter, MOVE_FILTER_LENGTH
 
 def parse_measurements(values):
-    t = numpy.arange(0, len(values))
+    t= numpy.arange(0, len(values))
     dt = t[1] - t[0]
 
     x = values

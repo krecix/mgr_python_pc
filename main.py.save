@@ -59,7 +59,7 @@ geneticParameters["minI"] = -5.0
 geneticParameters["maxD"] = 5.0
 geneticParameters["minD"] = -5.0
 
-serialDevice = Serial("/dev/ttyACM1", baudrate=921600, timeout=120)
+serialDevice = Serial("/dev/ttyACM0", baudrate=921600, timeout=120)
 serialBinary = BinaryCommunicator(serialDevice)
 vibrationUnit = VibrationUnit(serialBinary)
 

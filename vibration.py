@@ -78,13 +78,13 @@ class VibrationUnit():
         self.binaryCommunicator.closeSerial()
 
         if len(receivedMsg) == 1:
-            print("Check PID status: Error")
+            print("Check PID status: Error (1 byte received)")
             return None 
 
         if receivedMsg[1] == 0x01:
             print("Check PID status: Ok")
         else:
-            print("Check PID status: Error")
+            print("Check PID status: {} (Invalid message/too short wait time)".format(receivedMsg.hex(" ", 2)))
             return None
     
         return self.__prepareMeasurementFromCheckPID(receivedMsg)
