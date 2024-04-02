@@ -9,6 +9,9 @@ Created on Tue May 25 18:37:02 2021
 import json
 import geneticUtils
 import copy
+import random
+import csv
+from calculations import parse_measurements
 
 # Other consts
 # Use to discard zero values
@@ -24,10 +27,13 @@ class GeneticsPID():
         if self.actualState == None:
             self.actualState = dict()
             self.actualState["finished"] = False
+            self.actualState["finishedDataSpace"] = False
+            self.actualState["dataSpaceIteration"] = -1
             self.actualState["parameters"] = parameters
             self.actualState["content"] = dict()
             self.actualState["content"]["actualPopulation"] = dict()
             self.actualState["content"]["oldPopulations"] = list()
+            self.actualState["content"]["zerothDataSpace"] = list()
             self.actualState["content"]["actualPopulation"]["generation"] = 0
             geneticUtils.saveState("./savedState.json", self.actualState)
 
@@ -46,6 +52,10 @@ class GeneticsPID():
         for i in range(0, len(measurement)):
             measurement[i] = measurement[i] - mean
 
+        regulationTime = geneticUtils.calculateRegulationTime(measurement[300:])
+        print(f'Regulation time: {regulationTime} ms')
+        x, v, a = parse_measurements(measurement)
+
         return measurement
 
     def __checkPopulation(self, population):
@@ -61,6 +71,7 @@ class GeneticsPID():
             D = individual["D"]
             measurement = self.__checkIndividualPID((P, I, D))
             regulationTime = geneticUtils.calculateRegulationTime(measurement)
+            print(f'Regulation time: {regulationTime} ms')
 
             individual["regulationTimeMs"] = regulationTime
             checkedPopulation += [individual]
@@ -182,6 +193,11 @@ class GeneticsPID():
             bestIndividual = geneticUtils.findBestIndividualPerRegulationTime(
                 actualPopulation)
         else:
+            hasInitializedDataSpace = len(self.actualState["content"]["zerothDataSpace"]) == 0
+            hasFinishedDataSpace = self.actualState["finishedZerothDataSpace"]
+            #if not hasInitializedDataSpace or not hasFinishedDataSpace:
+            #   self.generateDataSpace()
+            #else:
             bestIndividual = self.__geneticExecutor()
 
         print("Best individual:")
@@ -193,3 +209,56 @@ class GeneticsPID():
         print(info)
 
         return {"P": bestIndividual["P"], "I": bestIndividual["I"], "D": bestIndividual["D"]}
+
+    def generateDataSpace(self):
+        random.seed()
+        lenIterations = 1000
+        iterationsDone = self.actualState["dataSpaceIteration"] + 1
+        for i in range(iterationsDone, lenIterations):
+            # Load pattern
+            patternFile = open("./pattern.json")
+            pattern = json.load(patternFile)
+            self.vibrationUnit.loadPattern(pattern)
+
+            P = -9 #random.uniform(-10, 10)
+            I = -9 #random.uniform(-10, 10)
+            D = -9 #random.uniform(-10, 10)
+
+            # Check PID
+            measurement = self.vibrationUnit.checkPID(P, I, D)
+
+            mean = float(sum(measurement) / len(measurement))
+            for j in range(0, len(measurement)):
+                measurement[j] = measurement[j] - mean
+
+            regulationTime = geneticUtils.calculateRegulationTime(measurement[300:])
+            print(f'Regulation time: {regulationTime} ms')
+
+            x, v, a = parse_measurements(measurement)
+
+            content = self.actualState["content"]["zerothDataSpace"]
+            population = dict()
+            population["number"] = i
+            population["P"] = P
+            population["I"] = I
+            population["D"] = D
+            population["max_x"] = x
+            population["max_v"] = v
+            population["max_a"] = a
+            population["regulationTimeMs"] = regulationTime
+            content.append(population)
+            self.actualState["dataSpaceIteration"] = i
+            geneticUtils.saveState("./savedState.json", self.actualState)
+
+            data = [
+                [i, P, I, D, x, v, a, regulationTime]
+            ]
+            path = 'dataSpacePID.csv'
+            with open(path, 'a', newline='') as file_csv:
+                writer = csv.writer(file_csv)
+                writer.writerows(data)
+
+        self.actualState["finishedZerothDataSpace"] = True
+        geneticUtils.saveState("./savedState.json", self.actualState)
+
+

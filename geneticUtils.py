@@ -12,11 +12,11 @@ from random import SystemRandom
 import json
 import copy
 
-MOVE_FILTER_LENGTH = 150 #200
-REGULATION_TIME_PERCENTAGE = 0.15
+MOVE_FILTER_LENGTH = 200
+REGULATION_TIME_PERCENTAGE = 0.50
 
 cryptogen = SystemRandom()
-
+#
 
 def loadState(file):
     try:
@@ -49,7 +49,7 @@ def movingFilter(signalIn, filterLength):
     # Suma dla zerowej próbki
     sumValue = signal[0]
     lastValue = sumValue
-    for i in range(1, filterLength):
+    for i in range(1, min(filterLength, len(signal))):
         sumValue += signal[i]
 
     signal[0] = sumValue / filterLength
