@@ -1,0 +1,15 @@
+{
+    "start_genetics_first": false,
+
+    "show_plots": false,
+    "random_pid": true,
+    "n_skip": 200,
+
+    "P": [-5, 5],
+    "I": [-5, 5],
+    "D": [-5, 5],
+
+    "hard_pid": [2,1,3.7],
+    "dsds": [4.024, 4.111, 4.021],
+    "dsfds": [-0.9, -1.8, 4.6]
+}

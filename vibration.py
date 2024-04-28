@@ -38,7 +38,7 @@ class VibrationUnit():
         message = self.__prepareLoadingPatternMsg(pattern)
         
         receivedMsg = self.binaryCommunicator.sendData(message)
-        if (receivedMsg == None):
+        if (receivedMsg is None):
             print("Returned message is None")
             sys.exit()
 
@@ -64,20 +64,26 @@ class VibrationUnit():
         return messageEncoded
     
     def __prepareMeasurementFromCheckPID(self, rawMeasurement):
-        data = rawMeasurement[2:]
-        pointZero = data[:2]
+        pointZero = rawMeasurement[:2]
         pointZero = int.from_bytes(pointZero, 'little')
-        data = data[2:]
-        length = int((len(data)))
         
-        values = []
+        data = rawMeasurement[4:12004]
+        length = int((len(data)))
+        x = []
         for i in range(0, length, 2):
             value = int.from_bytes(bytearray([data[i], data[i+1]]), byteOrder)
-            values += [float(value)]
-        
-        print(f'Number of samples: {len(values)}')
+            x += [float(value)]
 
-        return values
+        data = rawMeasurement[12004:]
+        length = int((len(data)))
+        u = []
+        for i in range(0, length, 2):
+            value = int.from_bytes(bytearray([data[i], data[i+1]]), byteOrder, signed=True)
+            u += [float(value)]
+        
+        print(f'Number of samples: {len(x)}')
+
+        return (x, u)
 
     def __prepareMeasurementFromCheckSingleParameter(self, rawMeasurement):
         data = rawMeasurement[2:]

@@ -13,7 +13,7 @@ import json
 import copy
 
 MOVE_FILTER_LENGTH = 200
-REGULATION_TIME_PERCENTAGE = 0.50
+REGULATION_TIME_PERCENTAGE = 0.30
 
 cryptogen = SystemRandom()
 #

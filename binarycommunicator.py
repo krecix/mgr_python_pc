@@ -34,19 +34,19 @@ class BinaryCommunicator():
         startByte = int.from_bytes(returnMsg, byteOrder)
     
         if startByte == 1:
-            returnMsg = self.serial.read(size=4);
+            returnMsg = self.serial.read(size=4)
         else:
             return None
         length = int.from_bytes(returnMsg, byteOrder)
         
-        returnMsg = self.serial.read(size=length);
+        returnMsg = self.serial.read(size=length)
         msg = returnMsg
         
-        returnMsg = self.serial.read(size=4);
+        returnMsg = self.serial.read(size=4)
         crcReceived = int.from_bytes(returnMsg, byteOrder)
         crc = zlib.crc32(msg) & 0xffffffff
         
-        returnMsg = self.serial.read(size=1);
+        returnMsg = self.serial.read(size=1)
         stopByte = int.from_bytes(returnMsg, byteOrder)
         
         if stopByte == 1 and (crc == crcReceived):
